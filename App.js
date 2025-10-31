@@ -23,34 +23,45 @@ export default function App() {
   //Estado da foto capturada
   const[foto,setFoto] = useState(null)
 
-   //Solicitando permissão da galeria
-  useEffect(()=>{
-    if(permissaoMedia===null) return;
-    if(!permissaoMedia?.granted){
+   //Solicitar permissão para acessar a galeria no inicio do app
+  useEffect(() => {
+    if (permissaoMedia === null) return;
+    if (!permissaoMedia?.granted) {
       requestPermissaoMedia()
     }
-
-  },[])
+  }, [])
 
     
 
-  //Função de tirar foto
-  const tirarFoto = async()=>{
-    if(cameraRef.current){
-      const dadoFoto = await cameraRef.current.takePictureAsync()//Captura a imagem
-      setFoto(dadoFoto)//Armazena no estado
+   //Função para tirar foto
+  const tirarFoto = async () => {
+    if (cameraRef.current) {
+      const dadoFoto = await cameraRef.current.takePictureAsync(); //captura foto
+      setFoto(dadoFoto)//Salva Estado
     }
   }
 
-  //Função para salvar a foto
-  const salvarFoto = async ()=>{
-    if(foto?.uri){
-      await MediaLibrary.createAssetAsync(foto.uri)
-      Alert.alert("Sucesso","Foto salva na galeria")
-      setFoto(null) //Reseta o estado
+  const salvarFoto = async () => {
+    try {
+      await MediaLibrary.createAssetAsync(foto.uri)//Salvar a foto na galeria
+      Alert.alert("Sucesso", "Foto salva com suceso!")
+      setFoto(null) //Reseta o estado para eu tirar uma foto
+    } catch (err) {
+      Alert.alert("Error", "Error ao Salvar Foto.")
     }
   }
  
+  //Enquanto a permissão não estiver carregada
+  if (!permissaoCam) return <View />
+
+  if (!permissaoCam.granted) {
+    return (
+      <View>
+        <Text>Permissão da câmera não foi concedida</Text>
+        <Button title='Permitir' onPress={requestPermissaoCam} />
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
